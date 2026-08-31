@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - Your Pet. Your Vet. Your PawCare.</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/landing.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text">VETPAW</span>
+            </div>
+            <div class="nav-menu">
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/register" class="nav-btn">Get Started Free</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Your Pet.<br>Your Vet.<br>Your PawCare.</h1>
+            <p class="hero-subtitle">
+                AI-powered pet health guidance, health tracking,<br>
+                emergency assistance, and animal welfare —<br>
+                all in one place.
+            </p>
+            <div class="hero-cta">
+                <a href="/register" class="btn btn-primary">Get Started Free</a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- AI Assistant Section -->
+    <section class="ai-assistant-section">
+        <div class="container">
+            <div class="ai-assistant-card">
+                <div class="ai-icon">🐾</div>
+                <h2 class="ai-title">Meet VETPAW AI</h2>
+                <p class="ai-subtitle">Your intelligent pet health companion.</p>
+                <p class="ai-description">
+                    Ask about symptoms, nutrition, breed care, or your pet's health.<br>
+                    Get instant guidance with emergency triage support.
+                </p>
+                <a href="/chat" class="btn btn-primary btn-large">Start Chatting</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2 class="section-title">What VETPAW Can Do</h2>
+            <div class="features-grid">
+                <div class="feature-card" onclick="window.location.href='/dashboard'">
+                    <div class="feature-icon">🩺</div>
+                    <h3>Health Tracking</h3>
+                    <p>Complete digital health records, vaccinations, and medications</p>
+                    <span class="feature-link">Track Health →</span>
+                </div>
+                <div class="feature-card" onclick="window.location.href='/emergency'">
+                    <div class="feature-icon">🚨</div>
+                    <h3>Emergency Help</h3>
+                    <p>24/7 emergency contacts and rescue organization finder</p>
+                    <span class="feature-link">Get Help →</span>
+                </div>
+                <div class="feature-card" onclick="window.location.href='/ngos'">
+                    <div class="feature-icon">❤️</div>
+                    <h3>Animal Welfare NGOs</h3>
+                    <p>Connect with NGOs, shelters, and volunteer networks</p>
+                    <span class="feature-link">Explore NGOs →</span>
+                </div>
+                <div class="feature-card" onclick="window.location.href='/breed-care'">
+                    <div class="feature-icon">�</div>
+                    <h3>Breed-Specific Care</h3>
+                    <p>Personalized recommendations based on breed and age</p>
+                    <span class="feature-link">Learn More →</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <h2 class="section-title">One Place for Every Paw</h2>
+                <p class="about-text">
+                    VETPAW is more than just a chatbot—it's a complete ecosystem designed to support
+                    every aspect of pet health and welfare. From AI-powered symptom assessment to finding
+                    the nearest veterinarian, from tracking vaccinations to connecting with animal welfare
+                    organizations, VETPAW brings everything together in one trusted platform.
+                </p>
+                <div class="about-stats">
+                    <div class="stat">
+                        <div class="stat-number">5</div>
+                        <div class="stat-label">User Types</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">24/7</div>
+                        <div class="stat-label">Emergency Support</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-number">100%</div>
+                        <div class="stat-label">Verified Contacts</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <h2 class="cta-title">Ready to Give Your Pet the Best Care?</h2>
+            <p class="cta-subtitle">Join thousands of pet owners who trust VETPAW for their pet's health and wellness.
+            </p>
+            <div class="cta-buttons">
+                <a href="/register" class="btn btn-primary btn-large">Create Free Account</a>
+                <a href="/chat" class="btn btn-secondary btn-large">Try AI Assistant</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <span class="logo-icon">🐾</span>
+                        <span class="logo-text">VETPAW</span>
+                    </div>
+                    <p class="footer-tagline">Your Pet. Your Vet. Your PawCare.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="/chat">AI Assistant</a></li>
+                        <li><a href="/dashboard">Dashboard</a></li>
+                        <li><a href="/vets">Find a Vet</a></li>
+                        <li><a href="/ngos">Animal Welfare</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Help Center</a></li>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Emergency</h4>
+                    <p class="emergency-text">For pet emergencies, always contact your local veterinarian or emergency
+                        animal hospital immediately.</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 VETPAW. All rights reserved. Built with ❤️ for pets everywhere.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/landing.js') }}"></script>
+</body>
+
+</html>

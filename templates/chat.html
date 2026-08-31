@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - AI Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="nav-logo" style="text-decoration: none;">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text" style="color: inherit; font-weight: inherit;">VETPAW</span>
+            </a>
+            <div class="nav-menu">
+                {% if session.get('user_id') %}
+                    <a href="/dashboard" class="nav-link">Home</a>
+                    <a href="/chat" class="nav-link active">AI Assistant</a>
+                    <a href="/pets" class="nav-link">My Pets</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <a href="/appointments" class="nav-link">Appointments</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">{{ session.get('user_name', 'User') }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/#features" class="nav-link">Features</a>
+                    <a href="/#about" class="nav-link">About</a>
+                    <a href="/chat" class="nav-link active">AI Assistant</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <div class="nav-divider"></div>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-btn">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile side panel toggle -->
+    <button class="side-panel-toggle" id="side-panel-toggle" onclick="toggleSidePanel()">
+        🐾 My Pets & Booking
+    </button>
+
+    <!-- Chat Layout -->
+    <div class="chat-layout">
+        <!-- Main Chat Area -->
+        <div class="chat-main">
+            <div class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="header-content">
+                        <div class="header-icon">🐾</div>
+                        <div class="header-text">
+                            <h1>VETPAW AI Assistant</h1>
+                            <p>Your intelligent pet health companion with emergency triage support</p>
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary btn-small" onclick="clearChat()">Clear Chat</button>
+                    </div>
+                </div>
+
+                <!-- Quick Prompts -->
+                <div class="quick-prompts" id="quick-prompts">
+                    <button class="prompt-chip" onclick="sendQuickPrompt('What can dogs eat?')">🍖 What can dogs eat?</button>
+                    <button class="prompt-chip" onclick="sendQuickPrompt('Emergency help')">🚨 Emergency help</button>
+                    <button class="prompt-chip" onclick="sendQuickPrompt('Breed care tips')">🐾 Breed care tips</button>
+                    <button class="prompt-chip" onclick="sendQuickPrompt('How often should I walk my dog?')">🚶 Walking schedule</button>
+                </div>
+
+                <!-- Chat Window -->
+                <div class="chat-window" id="chat-window">
+                    <div class="message bot">
+                        <div class="message-content">Hello! I'm VETPAW, your AI pet health assistant. 🐾
+
+I can help you with:
+• Symptom assessment and emergency triage
+• General pet health questions
+• Diet and nutrition advice
+• Breed-specific information
+• Health record questions
+
+Ask me anything! For example:
+"Can Golden Retrievers eat fish?"
+"What should I do if my dog is vomiting?"
+"How often should I walk my Labrador?"
+
+⚠️ Note: I provide educational guidance only. For emergencies, always contact a veterinarian immediately.</div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="chat-input-area">
+                    <input type="text" id="user-input" placeholder="Ask me anything about your pet..." autocomplete="off">
+                    <button id="send-btn" onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Side Panel -->
+        {% if session.get('user_id') %}
+        <div class="chat-side-panel" id="chat-side-panel">
+            <!-- Pet Selector Cards -->
+            <div class="side-section">
+                <h3 class="side-section-title">🐾 My Pets</h3>
+                <div class="pet-cards" id="pet-cards">
+                    <div class="pet-card-mini selected" data-pet-id="" onclick="selectPet('')">
+                        <span class="pet-card-emoji">🌐</span>
+                        <span class="pet-card-name">General Question</span>
+                    </div>
+                    <!-- Pet cards populated by JS -->
+                </div>
+            </div>
+
+            <!-- Appointment Booking -->
+            <div class="side-section">
+                <div class="booking-header" onclick="toggleBookingForm()">
+                    <h3 class="side-section-title">📅 Book Appointment</h3>
+                    <span class="booking-toggle" id="booking-toggle">▼</span>
+                </div>
+                <div class="booking-form" id="booking-form" style="display: none;">
+                    <div class="form-group">
+                        <label>Pet</label>
+                        <select id="booking-pet-select">
+                            <option value="">Select pet...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Clinic</label>
+                        <select id="booking-clinic-select" onchange="loadBookingVets(this.value)">
+                            <option value="">Select clinic...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Veterinarian</label>
+                        <select id="booking-vet-select">
+                            <option value="">Select vet...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="booking-date">
+                    </div>
+                    <div class="form-group">
+                        <label>Time</label>
+                        <input type="time" id="booking-time">
+                    </div>
+                    <div class="form-group">
+                        <label>Reason</label>
+                        <textarea id="booking-reason" placeholder="e.g. Annual checkup" rows="2"></textarea>
+                    </div>
+                    <button class="btn btn-primary" style="width:100%" onclick="bookAppointment()">Book Appointment</button>
+                    <div class="booking-message" id="booking-message"></div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-message" id="chat-toast"></div>
+
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="nav-logo" style="text-decoration: none;">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text" style="color: inherit; font-weight: inherit;">VETPAW</span>
+            </a>
+            <div class="nav-menu">
+                {% if session.get('user_id') %}
+                    <a href="/dashboard" class="nav-link active">Home</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/pets" class="nav-link">My Pets</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <a href="/appointments" class="nav-link">Appointments</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">{{ session.get('user_name', 'User') }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/#features" class="nav-link">Features</a>
+                    <a href="/#about" class="nav-link">About</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <div class="nav-divider"></div>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-btn">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-container">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <h1 class="welcome-title">Good morning, {{ session.get('user_name', 'User') }}! 🐾</h1>
+            <p class="welcome-subtitle">How can we help your pet today?</p>
+            <a href="/chat" class="btn btn-primary btn-large">Ask VETPAW AI</a>
+        </section>
+
+        <!-- My Pets Section -->
+        <section class="pets-section">
+            <div class="section-header">
+                <h2 class="section-title">My Pets</h2>
+                <a href="/pets" class="btn btn-secondary btn-small">View All</a>
+            </div>
+            <div id="pets-container" class="pets-grid">
+                <!-- Pets will be loaded here -->
+                <div class="empty-state">
+                    <div class="empty-icon">🐾</div>
+                    <p class="empty-text">You haven't registered a pet yet</p>
+                    <p class="empty-subtext">Create your first pet profile to start tracking their health.</p>
+                    <a href="/pets" class="btn btn-primary">Register My Pet</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions-section">
+            <h2 class="section-title">Quick Actions</h2>
+            <div class="quick-actions-grid">
+                <a href="/vets" class="quick-action-card">
+                    <div class="action-icon">🩺</div>
+                    <h3>Find a Vet</h3>
+                </a>
+                <a href="/emergency" class="quick-action-card">
+                    <div class="action-icon">🚨</div>
+                    <h3>Emergency</h3>
+                </a>
+                <a href="/pets" class="quick-action-card">
+                    <div class="action-icon">💉</div>
+                    <h3>Vaccinations</h3>
+                </a>
+                <a href="/ngos" class="quick-action-card">
+                    <div class="action-icon">❤️</div>
+                    <h3>Animal Welfare</h3>
+                </a>
+                <a href="/breed-care" class="quick-action-card">
+                    <div class="action-icon">🤝</div>
+                    <h3>Breed Care</h3>
+                </a>
+                <a href="/chat" class="quick-action-card">
+                    <div class="action-icon">🐾</div>
+                    <h3>AI Assistant</h3>
+                </a>
+            </div>
+        </section>
+
+        <!-- Upcoming Section -->
+        <section class="upcoming-section">
+            <h2 class="section-title">Upcoming</h2>
+            <div id="upcoming-container" class="upcoming-list">
+                <!-- Upcoming items will be loaded here -->
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <p class="empty-text">No upcoming appointments or reminders</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

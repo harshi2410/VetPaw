@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - Breed-Specific Care</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="nav-logo" style="text-decoration: none;">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text" style="color: inherit; font-weight: inherit;">VETPAW</span>
+            </a>
+            <div class="nav-menu">
+                {% if session.get('user_id') %}
+                    <a href="/dashboard" class="nav-link">Home</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/pets" class="nav-link">My Pets</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link active">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <a href="/appointments" class="nav-link">Appointments</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">{{ session.get('user_name', 'User') }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/#features" class="nav-link">Features</a>
+                    <a href="/#about" class="nav-link">About</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link active">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <div class="nav-divider"></div>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-btn">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breed Care Content -->
+    <div class="dashboard-container">
+        <section class="breed-care-section">
+            <h1 class="section-title">Breed-Specific Care</h1>
+            <p class="section-subtitle">Get personalized care recommendations based on your pet's breed</p>
+
+            <!-- Breed Selector -->
+            <div class="search-bar">
+                <select id="pet-species">
+                    <option value="">Select Species</option>
+                    <option value="Dog">Dog</option>
+                    <option value="Cat">Cat</option>
+                </select>
+                <input type="text" id="pet-breed" placeholder="Enter breed (e.g., Golden Retriever)">
+                <button class="btn btn-primary" onclick="getBreedCare()">Get Care Tips</button>
+            </div>
+
+            <!-- Breed Care Content -->
+            <div id="breed-care-content" class="info-section">
+                <div class="empty-state">
+                    <div class="empty-icon">🤝</div>
+                    <p class="empty-text">Select your pet's species and breed</p>
+                    <p class="empty-subtext">Get personalized nutrition, exercise, grooming, and health recommendations.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/breed_care.js') }}"></script>
+</body>
+</html>

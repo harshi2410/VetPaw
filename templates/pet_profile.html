@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - Pet Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Health Score Card */
+        .health-score-card {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .health-score-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: white;
+            position: relative;
+        }
+        .health-score-circle.excellent { background: linear-gradient(135deg, #388E3C, #4CAF50); }
+        .health-score-circle.good { background: linear-gradient(135deg, #F57C00, #FFB74D); }
+        .health-score-circle.needs-attention { background: linear-gradient(135deg, #D32F2F, #EF5350); }
+        .health-score-label {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.25rem;
+        }
+        .health-score-detail {
+            font-size: 0.85rem;
+            color: var(--text-light);
+        }
+        .health-breakdown {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .breakdown-item {
+            text-align: center;
+            font-size: 0.85rem;
+        }
+        .breakdown-item .check { color: var(--success-color); }
+        .breakdown-item .warn { color: var(--warning-color); }
+        .breakdown-item .fail { color: var(--error-color); }
+
+        /* Quick Stats Bar */
+        .quick-stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .quick-stat-card {
+            background: var(--bg-white);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-color);
+        }
+        .quick-stat-card .qs-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .quick-stat-card .qs-value { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); }
+        .quick-stat-card .qs-label { font-size: 0.8rem; color: var(--text-light); margin-top: 0.25rem; }
+
+        /* Pet Info Details */
+        .pet-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+        .info-field {
+            background: var(--bg-light);
+            border-radius: var(--radius);
+            padding: 1rem;
+            border: 1px solid var(--secondary-light);
+        }
+        .info-field .field-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        .info-field .field-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        /* Weight Bars */
+        .weight-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+        .weight-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .weight-bar-label {
+            min-width: 90px;
+            font-size: 0.85rem;
+            color: var(--text-light);
+            text-align: right;
+        }
+        .weight-bar-track {
+            flex: 1;
+            background: var(--bg-light);
+            border-radius: 8px;
+            height: 28px;
+            overflow: hidden;
+        }
+        .weight-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+            min-width: 50px;
+            transition: width 0.5s ease;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(62, 39, 35, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-box {
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 550px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+        .modal-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-title h3 { color: var(--text-dark); font-size: 1.3rem; }
+        .modal-close {
+            background: none; border: none;
+            font-size: 1.5rem; cursor: pointer;
+            color: var(--text-light);
+        }
+        .modal-close:hover { color: var(--error-color); }
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--secondary-light);
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            border-radius: var(--radius);
+            color: white;
+            font-weight: 500;
+            z-index: 3000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: var(--success-color); }
+        .toast.error { background: var(--error-color); }
+
+        /* Vaccination overdue warning */
+        .badge.red {
+            background: var(--error-color);
+            color: white;
+        }
+        .overdue-warning {
+            color: var(--error-color);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        /* Pet header extra details */
+        .pet-extra-details {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .pet-extra-details span {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            background: rgba(255,255,255,0.15);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+        }
+        /* Active filter buttons */
+        .active-med-filter {
+            background: var(--primary-color) !important;
+            color: white !important;
+        }
+        .record-card-actions {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed rgba(141, 110, 99, 0.25);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="nav-logo" style="text-decoration: none;">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text" style="color: inherit; font-weight: inherit;">VETPAW</span>
+            </a>
+            <div class="nav-menu">
+                {% if session.get('user_id') %}
+                    <a href="/dashboard" class="nav-link">Home</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/pets" class="nav-link active">My Pets</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <a href="/appointments" class="nav-link">Appointments</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">{{ session.get('user_name', 'User') }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/#features" class="nav-link">Features</a>
+                    <a href="/#about" class="nav-link">About</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <div class="nav-divider"></div>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-btn">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Pet Profile Content -->
+    <div class="dashboard-container">
+        <!-- Pet Header -->
+        <section class="pet-header-section">
+            <div class="pet-header-content">
+                <div class="pet-avatar" id="pet-avatar">🐾</div>
+                <div class="pet-info">
+                    <h1 class="pet-name" id="pet-name">Loading...</h1>
+                    <p class="pet-breed" id="pet-breed">Loading...</p>
+                    <p class="pet-id" id="pet-vetpaw-id">VETPAW ID: Loading...</p>
+                    <div class="pet-extra-details" id="pet-extra-details"></div>
+                </div>
+                <div class="pet-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Age</span>
+                        <span class="stat-value" id="pet-age">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Weight</span>
+                        <span class="stat-value" id="pet-weight">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Gender</span>
+                        <span class="stat-value" id="pet-gender">-</span>
+                    </div>
+                </div>
+            </div>
+            <a href="/pets" class="btn btn-secondary">← Back to My Pets</a>
+        </section>
+
+        <!-- Health Score -->
+        <div class="health-score-card" id="health-score-card">
+            <div class="health-score-circle" id="health-score-circle">--</div>
+            <div class="health-score-label" id="health-score-label">Health Score</div>
+            <div class="health-score-detail" id="health-score-detail">Calculating...</div>
+            <div class="health-breakdown" id="health-breakdown"></div>
+        </div>
+
+        <!-- Quick Stats Bar -->
+        <div class="quick-stats-bar">
+            <div class="quick-stat-card">
+                <div class="qs-icon">💉</div>
+                <div class="qs-value" id="qs-vaccinations">0</div>
+                <div class="qs-label">Vaccinations</div>
+            </div>
+            <div class="quick-stat-card">
+                <div class="qs-icon">💊</div>
+                <div class="qs-value" id="qs-medications">0</div>
+                <div class="qs-label">Active Meds</div>
+            </div>
+            <div class="quick-stat-card">
+                <div class="qs-icon">📅</div>
+                <div class="qs-value" id="qs-appointments">0</div>
+                <div class="qs-label">Upcoming Appts</div>
+            </div>
+            <div class="quick-stat-card">
+                <div class="qs-icon">⚖️</div>
+                <div class="qs-value" id="qs-last-weight">-</div>
+                <div class="qs-label">Last Weight</div>
+            </div>
+        </div>
+
+        <!-- Health Tabs -->
+        <section class="health-section">
+            <div class="health-tabs">
+                <button class="tab-btn active" data-tab="health-records">📋 Health Records</button>
+                <button class="tab-btn" data-tab="vaccinations">💉 Vaccinations</button>
+                <button class="tab-btn" data-tab="medications">💊 Medications</button>
+                <button class="tab-btn" data-tab="weight">⚖️ Weight History</button>
+                <button class="tab-btn" data-tab="appointments">📅 Appointments</button>
+                <button class="tab-btn" data-tab="pet-info">📝 Pet Info</button>
+            </div>
+
+            <!-- Health Records Tab -->
+            <div class="tab-content active" id="health-records-tab">
+                <div class="section-header">
+                    <h3>Health Records</h3>
+                    <button class="btn btn-primary btn-small" onclick="openModal('health-record-modal')">+ Add Record</button>
+                </div>
+                <div id="health-records-container" class="records-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">📋</div>
+                        <p class="empty-text">No health records yet</p>
+                        <p class="empty-subtext">Add your first health record to start tracking your pet's health history.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vaccinations Tab -->
+            <div class="tab-content" id="vaccinations-tab">
+                <div class="section-header">
+                    <h3>Vaccinations</h3>
+                    <button class="btn btn-primary btn-small" onclick="openModal('vaccination-modal')">+ Add Vaccination</button>
+                </div>
+                <div id="vaccinations-container" class="records-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">💉</div>
+                        <p class="empty-text">No vaccinations recorded</p>
+                        <p class="empty-subtext">Track your pet's vaccinations to stay on schedule.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Medications Tab -->
+            <div class="tab-content" id="medications-tab">
+                <div class="section-header">
+                    <h3>Medications</h3>
+                    <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                        <div class="med-filters" style="display: flex; gap: 0.25rem;">
+                            <button class="btn btn-secondary btn-small active-med-filter" id="filter-med-all" onclick="setMedicationFilter('all')">All</button>
+                            <button class="btn btn-secondary btn-small" id="filter-med-active" onclick="setMedicationFilter('active')">Active</button>
+                            <button class="btn btn-secondary btn-small" id="filter-med-completed" onclick="setMedicationFilter('completed')">Completed</button>
+                        </div>
+                        <button class="btn btn-primary btn-small" onclick="openModal('medication-modal')">+ Add Medication</button>
+                    </div>
+                </div>
+                <div id="medications-container" class="records-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">💊</div>
+                        <p class="empty-text">No medications recorded</p>
+                        <p class="empty-subtext">Track your pet's medications and dosages.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weight History Tab -->
+            <div class="tab-content" id="weight-tab">
+                <div class="section-header">
+                    <h3>Weight History</h3>
+                    <button class="btn btn-primary btn-small" onclick="openModal('weight-modal')">+ Add Weight</button>
+                </div>
+                <div id="weight-container" class="records-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">⚖️</div>
+                        <p class="empty-text">No weight records</p>
+                        <p class="empty-subtext">Track your pet's weight over time.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments Tab -->
+            <div class="tab-content" id="appointments-tab">
+                <div class="section-header">
+                    <h3>Appointments</h3>
+                    <button class="btn btn-primary btn-small" onclick="openModal('appointment-modal')">+ Book Appointment</button>
+                </div>
+                <div id="appointments-container" class="records-list">
+                    <div class="empty-state">
+                        <div class="empty-icon">📅</div>
+                        <p class="empty-text">No appointments scheduled</p>
+                        <p class="empty-subtext">Book vet appointments for your pet.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pet Info Tab -->
+            <div class="tab-content" id="pet-info-tab">
+                <div class="section-header">
+                    <h3>Pet Information</h3>
+                    <button class="btn btn-primary btn-small" onclick="openEditPetInfo()">✏️ Edit</button>
+                </div>
+                <div id="pet-info-container" class="pet-info-grid"></div>
+            </div>
+        </section>
+    </div>
+
+    <!-- ========== MODALS ========== -->
+
+    <!-- Health Record Modal -->
+    <div class="modal-overlay" id="health-record-modal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <h3>📋 Add Health Record</h3>
+                <button class="modal-close" onclick="closeModal('health-record-modal')">&times;</button>
+            </div>
+            <form id="health-record-form" onsubmit="submitHealthRecord(event)">
+                <div class="form-group">
+                    <label>Record Type</label>
+                    <select name="record_type" required>
+                        <option value="">Select type...</option>
+                        <option value="Checkup">Checkup</option>
+                        <option value="Surgery">Surgery</option>
+                        <option value="Dental">Dental</option>
+                        <option value="Lab Work">Lab Work</option>
+                        <option value="X-Ray">X-Ray</option>
+                        <option value="Emergency">Emergency</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Visit Date</label>
+                        <input type="date" name="visit_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Follow-up Date</label>
+                        <input type="date" name="follow_up_date">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Veterinarian Name</label>
+                        <input type="text" name="veterinarian_name" placeholder="Dr. Smith">
+                    </div>
+                    <div class="form-group">
+                        <label>Clinic Name</label>
+                        <input type="text" name="clinic_name" placeholder="Pet Care Clinic">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Diagnosis</label>
+                    <input type="text" name="diagnosis" placeholder="Enter diagnosis">
+                </div>
+                <div class="form-group">
+                    <label>Treatment</label>
+                    <textarea name="treatment" placeholder="Describe treatment"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Additional notes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('health-record-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Vaccination Modal -->
+    <div class="modal-overlay" id="vaccination-modal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <h3>💉 Add Vaccination</h3>
+                <button class="modal-close" onclick="closeModal('vaccination-modal')">&times;</button>
+            </div>
+            <form id="vaccination-form" onsubmit="submitVaccination(event)">
+                <div class="form-group">
+                    <label>Vaccine Name</label>
+                    <input type="text" name="vaccine_name" placeholder="e.g. Rabies, DHPP" required>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" required>
+                        <option value="COMPLETED">Completed</option>
+                        <option value="SCHEDULED">Scheduled</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Administration Date</label>
+                        <input type="date" name="administration_date">
+                    </div>
+                    <div class="form-group">
+                        <label>Next Due Date</label>
+                        <input type="date" name="next_due_date">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Veterinarian</label>
+                        <input type="text" name="veterinarian_name" placeholder="Dr. Smith">
+                    </div>
+                    <div class="form-group">
+                        <label>Clinic</label>
+                        <input type="text" name="clinic_name" placeholder="Pet Care Clinic">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Batch Number</label>
+                    <input type="text" name="batch_number" placeholder="Optional">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Additional notes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('vaccination-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Vaccination</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Medication Modal -->
+    <div class="modal-overlay" id="medication-modal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <h3>💊 Add Medication</h3>
+                <button class="modal-close" onclick="closeModal('medication-modal')">&times;</button>
+            </div>
+            <form id="medication-form" onsubmit="submitMedication(event)">
+                <div class="form-group">
+                    <label>Medication Name</label>
+                    <input type="text" name="medication_name" placeholder="e.g. Apoquel" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Dosage</label>
+                        <input type="text" name="dosage" placeholder="e.g. 5mg" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Frequency</label>
+                        <input type="text" name="frequency" placeholder="e.g. Twice daily" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Start Date</label>
+                        <input type="date" name="start_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date</label>
+                        <input type="date" name="end_date">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Prescribing Vet</label>
+                    <input type="text" name="prescribing_vet" placeholder="Dr. Smith">
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Additional notes"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('medication-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Medication</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Weight Modal -->
+    <div class="modal-overlay" id="weight-modal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <h3>⚖️ Add Weight Entry</h3>
+                <button class="modal-close" onclick="closeModal('weight-modal')">&times;</button>
+            </div>
+            <form id="weight-form" onsubmit="submitWeight(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Weight (kg)</label>
+                        <input type="number" name="weight_kg" step="0.1" min="0" placeholder="e.g. 12.5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="recorded_date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Any observations"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('weight-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Weight</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Appointment Modal -->
+    <div class="modal-overlay" id="appointment-modal">
+        <div class="modal-box">
+            <div class="modal-title">
+                <h3>📅 Book Appointment</h3>
+                <button class="modal-close" onclick="closeModal('appointment-modal')">&times;</button>
+            </div>
+            <form id="appointment-form" onsubmit="submitAppointment(event)">
+                <div class="form-group">
+                    <label>Clinic</label>
+                    <select name="clinic_id" id="appt-clinic-select" onchange="loadVetsForClinic(this.value)">
+                        <option value="">Select clinic...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Veterinarian</label>
+                    <select name="veterinarian_id" id="appt-vet-select">
+                        <option value="">Select vet...</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" name="appointment_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Time</label>
+                        <input type="time" name="appointment_time">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Reason</label>
+                    <input type="text" name="reason" placeholder="e.g. Annual checkup" required>
+                </div>
+                <div class="form-group">
+                    <label>Notes</label>
+                    <textarea name="notes" placeholder="Additional details"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('appointment-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Book Appointment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Pet Info Edit Modal -->
+    <div class="modal-overlay" id="pet-info-modal">
+        <div class="modal-box" style="max-width: 650px;">
+            <div class="modal-title">
+                <h3>📝 Edit Pet Information & Health Profile</h3>
+                <button class="modal-close" onclick="closeModal('pet-info-modal')">&times;</button>
+            </div>
+            <form id="pet-info-form" onsubmit="submitPetInfo(event)">
+                <!-- 1. Identity -->
+                <h4 style="color: var(--primary-color); margin: 0 0 0.75rem 0; font-size: 1rem;">1. Basic Details</h4>
+                <div class="form-group">
+                    <label>Pet Name *</label>
+                    <input type="text" name="name" id="edit-name" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Species *</label>
+                        <select name="species" id="edit-species">
+                            <option value="Dog">🐶 Dog</option>
+                            <option value="Cat">🐱 Cat</option>
+                            <option value="Bird">🐦 Bird</option>
+                            <option value="Rabbit">🐰 Rabbit</option>
+                            <option value="Hamster">🐹 Hamster</option>
+                            <option value="Fish">🐠 Fish</option>
+                            <option value="Other">🐾 Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Breed</label>
+                        <input type="text" name="breed" id="edit-breed">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="date" name="date_of_birth" id="edit-dob">
+                    </div>
+                    <div class="form-group">
+                        <label>Gender</label>
+                        <select name="gender" id="edit-gender">
+                            <option value="">Select...</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Male (Neutered)">Male (Neutered)</option>
+                            <option value="Female (Spayed)">Female (Spayed)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Color / Markings</label>
+                        <input type="text" name="color" id="edit-color">
+                    </div>
+                    <div class="form-group">
+                        <label>Weight (kg)</label>
+                        <input type="number" name="weight_kg" id="edit-weight" step="0.1">
+                    </div>
+                </div>
+
+                <!-- 2. Medical & Health Profile -->
+                <h4 style="color: var(--primary-color); margin: 1.25rem 0 0.75rem 0; font-size: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">2. Health & Medical Profile</h4>
+                <div class="form-group">
+                    <label>Known Allergies</label>
+                    <input type="text" name="allergies" id="edit-allergies" placeholder="e.g., Chicken protein, Fleas, Penicillin">
+                </div>
+                <div class="form-group">
+                    <label>Medical Conditions / History</label>
+                    <input type="text" name="medical_conditions" id="edit-conditions" placeholder="e.g., Asthma, Sensitive stomach, Hip dysplasia">
+                </div>
+                <div class="form-group">
+                    <label>Dietary Needs & Routine</label>
+                    <input type="text" name="dietary_needs" id="edit-diet" placeholder="e.g., Grain-free kibble twice daily">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Spayed / Neutered</label>
+                        <select name="is_neutered" id="edit-neutered">
+                            <option value="false">No / Intact</option>
+                            <option value="true">Yes / Neutered or Spayed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Activity Level</label>
+                        <select name="activity_level" id="edit-activity">
+                            <option value="Low">Low</option>
+                            <option value="Moderate">Moderate</option>
+                            <option value="High">High</option>
+                            <option value="Athletic">Athletic</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Blood Group / Type</label>
+                    <input type="text" name="blood_type" id="edit-blood-type" placeholder="e.g., DEA 1.1+, Type A">
+                </div>
+
+                <!-- 3. Identification & Insurance -->
+                <h4 style="color: var(--primary-color); margin: 1.25rem 0 0.75rem 0; font-size: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">3. Identification & Insurance</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Microchip ID</label>
+                        <input type="text" name="microchip_id" id="edit-microchip">
+                    </div>
+                    <div class="form-group">
+                        <label>Registration / Tag ID</label>
+                        <input type="text" name="registration_id" id="edit-reg-id">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Insurance Provider</label>
+                        <input type="text" name="insurance_provider" id="edit-insurance-provider">
+                    </div>
+                    <div class="form-group">
+                        <label>Policy Number</label>
+                        <input type="text" name="insurance_policy_number" id="edit-insurance-policy">
+                    </div>
+                </div>
+
+                <!-- 4. Emergency Contacts & Notes -->
+                <h4 style="color: var(--primary-color); margin: 1.25rem 0 0.75rem 0; font-size: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">4. Emergency Contacts & Notes</h4>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Emergency Contact Name</label>
+                        <input type="text" name="emergency_contact_name" id="edit-ec-name">
+                    </div>
+                    <div class="form-group">
+                        <label>Emergency Contact Phone</label>
+                        <input type="text" name="emergency_contact_phone" id="edit-ec-phone">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Special Care & Personality Notes</label>
+                    <textarea name="notes" id="edit-notes" placeholder="Behavioral quirks, favorite habits, etc."></textarea>
+                </div>
+
+                <div class="form-actions" style="margin-top: 1.5rem; border-top: 1px solid #eee; padding-top: 1rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('pet-info-modal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Health Profile Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast-notification"></div>
+
+    <script src="{{ url_for('static', filename='js/pet_profile.js') }}"></script>
+</body>
+</html>

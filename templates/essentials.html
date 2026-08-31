@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - Pet Essentials</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="nav-logo" style="text-decoration: none;">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text" style="color: inherit; font-weight: inherit;">VETPAW</span>
+            </a>
+            <div class="nav-menu">
+                {% if session.get('user_id') %}
+                    <a href="/dashboard" class="nav-link">Home</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/pets" class="nav-link">My Pets</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link active">Essentials</a>
+                    <a href="/appointments" class="nav-link">Appointments</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">{{ session.get('user_name', 'User') }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/#features" class="nav-link">Features</a>
+                    <a href="/#about" class="nav-link">About</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link active">Essentials</a>
+                    <div class="nav-divider"></div>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-btn">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Essentials Content -->
+    <div class="dashboard-container">
+        <section class="essentials-section">
+            <h1 class="section-title">Pet Essentials</h1>
+            <p class="section-subtitle">Essential items and supplies for your pet's health and happiness</p>
+
+            <!-- Filter Options -->
+            <div class="search-bar">
+                <select id="essential-category">
+                    <option value="">All Categories</option>
+                    <option value="Food">Food & Nutrition</option>
+                    <option value="Toys">Toys & Entertainment</option>
+                    <option value="Grooming">Grooming Supplies</option>
+                    <option value="Health">Health & Wellness</option>
+                    <option value="Accessories">Accessories</option>
+                    <option value="Housing">Housing & Bedding</option>
+                </select>
+                <select id="essential-species">
+                    <option value="">All Species</option>
+                    <option value="Dog">Dogs</option>
+                    <option value="Cat">Cats</option>
+                    <option value="Bird">Birds</option>
+                    <option value="Rabbit">Rabbits</option>
+                    <option value="Other">Other</option>
+                </select>
+                <button class="btn btn-primary" onclick="filterEssentials()">Filter</button>
+            </div>
+
+            <!-- Essentials Grid -->
+            <div id="essentials-container" class="essentials-grid">
+                <div class="empty-state">
+                    <div class="empty-icon">🛍️</div>
+                    <p class="empty-text">Loading pet essentials...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/essentials.js') }}"></script>
+</body>
+</html>

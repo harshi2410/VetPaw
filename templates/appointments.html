@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - Book Appointment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="nav-logo" style="text-decoration: none;">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text" style="color: inherit; font-weight: inherit;">VETPAW</span>
+            </a>
+            <div class="nav-menu">
+                {% if session.get('user_id') %}
+                    <a href="/dashboard" class="nav-link">Home</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/pets" class="nav-link">My Pets</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <a href="/appointments" class="nav-link active">Appointments</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">{{ session.get('user_name', 'User') }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/#features" class="nav-link">Features</a>
+                    <a href="/#about" class="nav-link">About</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <div class="nav-divider"></div>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-btn">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Appointments Content -->
+    <div class="dashboard-container">
+        <section class="appointments-section">
+            <div class="section-header" style="margin-bottom: 1.5rem;">
+                <h1 class="section-title" style="margin-bottom: 0.25rem;">Book Veterinary Appointment</h1>
+                <p class="section-subtitle" style="margin: 0; color: var(--text-light); font-size: 0.95rem;">Select Dog or Cat, choose your preferred clinic & veterinarian, and schedule with instant confirmation.</p>
+            </div>
+
+            <!-- Book Appointment Form Card -->
+            <div class="add-pet-form" style="background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 2.5rem; border: 1px solid #e0e0e0;">
+                <h3 style="margin: 0 0 1rem 0; font-size: 1.3rem; color: var(--text-dark);">📅 Schedule a Visit</h3>
+
+                <!-- 1. Dog / Cat / Animal Selector -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.9rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.5rem;">1. Select Animal / Pet Type *</label>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;">
+                        <button type="button" class="btn species-select-btn active" data-species="Dog" onclick="selectSpecies('Dog')" style="padding: 0.75rem 1rem; border-radius: 12px; border: 2px solid var(--primary-color); background: var(--primary-color); color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; transition: all 0.2s;">
+                            <span style="font-size: 1.3rem;">🐶</span> Dog
+                        </button>
+                        <button type="button" class="btn species-select-btn" data-species="Cat" onclick="selectSpecies('Cat')" style="padding: 0.75rem 1rem; border-radius: 12px; border: 2px solid #ddd; background: #f9f9f9; color: var(--text-dark); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; transition: all 0.2s;">
+                            <span style="font-size: 1.3rem;">🐱</span> Cat
+                        </button>
+                        <button type="button" class="btn species-select-btn" data-species="Other" onclick="selectSpecies('Other')" style="padding: 0.75rem 1rem; border-radius: 12px; border: 2px solid #ddd; background: #f9f9f9; color: var(--text-dark); font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 1rem; transition: all 0.2s;">
+                            <span style="font-size: 1.3rem;">🐾</span> Other Pet
+                        </button>
+                    </div>
+                </div>
+
+                <form id="appointment-form">
+                    <input type="hidden" name="pet_species" id="selected-species-input" value="Dog">
+
+                    <!-- Pet Selection Dropdown & Custom Name -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label id="pet-select-label">Select Dog *</label>
+                            <select name="pet_id" id="pet-select" onchange="handlePetSelectionChange(this.value)">
+                                <option value="">Select a pet...</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="custom-pet-name-group" style="display: none;">
+                            <label>Pet Name *</label>
+                            <input type="text" name="pet_name" id="custom-pet-name" placeholder="e.g., Bruno, Milo">
+                        </div>
+                    </div>
+
+                    <!-- Clinic & Vet -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label>Select Clinic *</label>
+                            <select name="clinic_id" required id="clinic-select" onchange="filterVetsByClinic(this.value)">
+                                <option value="">Choose clinic...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Select Veterinarian *</label>
+                            <select name="veterinarian_id" required id="vet-select">
+                                <option value="">Choose veterinarian...</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Date & Time -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label>Appointment Date *</label>
+                            <input type="date" name="appointment_date" id="appointment-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Appointment Time *</label>
+                            <input type="time" name="appointment_time" id="appointment-time" required>
+                        </div>
+                    </div>
+
+                    <!-- Quick Reason Chips -->
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-light); margin-bottom: 0.5rem;">Quick Select Reason for Visit:</label>
+                        <div id="quick-reasons-container" style="display: flex; gap: 0.5rem; flex-wrap: wrap;"></div>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label>Reason for Visit *</label>
+                        <input type="text" name="reason" id="appointment-reason" required placeholder="e.g., Annual vaccination, Dental cleaning, Health checkup">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Notes & Symptoms (Optional)</label>
+                        <textarea name="notes" rows="2" placeholder="Any specific symptoms, diet changes, or special requests..."></textarea>
+                    </div>
+
+                    <div class="form-actions" style="display: flex; justify-content: flex-end;">
+                        <button type="submit" class="btn btn-primary" style="padding: 0.75rem 2rem; font-size: 1rem; font-weight: 600;">Confirm & Book Appointment 📅</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- My Appointments Section -->
+            <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                <h2 class="section-title" style="margin: 0;">My Scheduled Appointments</h2>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-secondary btn-small filter-btn active" onclick="filterAppointmentList('ALL')">All</button>
+                    <button class="btn btn-secondary btn-small filter-btn" onclick="filterAppointmentList('Dog')">🐶 Dogs</button>
+                    <button class="btn btn-secondary btn-small filter-btn" onclick="filterAppointmentList('Cat')">🐱 Cats</button>
+                </div>
+            </div>
+
+            <div id="appointments-container" class="records-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+                <div class="empty-state">
+                    <div class="empty-icon">📅</div>
+                    <p class="empty-text">Loading your appointments...</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/appointments.js') }}"></script>
+</body>
+</html>
+

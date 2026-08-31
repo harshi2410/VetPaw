@@ -1,0 +1,12 @@
+symptom,category,severity
+vomiting,digestive,moderate
+diarrhea,digestive,moderate
+difficulty breathing,respiratory,high
+loss of appetite,general,low
+cough,respiratory,moderate
+coughing,respiratory,moderate
+lethargy,general,moderate
+limping,musculoskeletal,low
+fever,general,moderate
+seizure,neurological,high
+bleeding,trauma,high

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VETPAW - Emergency Resources</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="{{ '/dashboard' if session.get('user_id') else '/' }}" class="nav-logo" style="text-decoration: none;">
+                <span class="logo-icon">🐾</span>
+                <span class="logo-text" style="color: inherit; font-weight: inherit;">VETPAW</span>
+            </a>
+            <div class="nav-menu">
+                {% if session.get('user_id') %}
+                    <a href="/dashboard" class="nav-link">Home</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/pets" class="nav-link">My Pets</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link active">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <a href="/appointments" class="nav-link">Appointments</a>
+                    <div class="nav-divider"></div>
+                    <span class="nav-user">{{ session.get('user_name', 'User') }}</span>
+                    <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                    <a href="/#features" class="nav-link">Features</a>
+                    <a href="/#about" class="nav-link">About</a>
+                    <a href="/chat" class="nav-link">AI Assistant</a>
+                    <a href="/vets" class="nav-link">Find Vet</a>
+                    <a href="/emergency" class="nav-link active">Emergency</a>
+                    <a href="/ngos" class="nav-link">NGOs</a>
+                    <a href="/breed-care" class="nav-link">Breed Care</a>
+                    <a href="/essentials" class="nav-link">Essentials</a>
+                    <div class="nav-divider"></div>
+                    <a href="/login" class="nav-link">Login</a>
+                    <a href="/register" class="nav-btn">Get Started Free</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Emergency Content -->
+    <div class="dashboard-container">
+        <section class="emergency-section">
+            <h1 class="section-title emergency">Emergency Resources</h1>
+            <p class="section-subtitle">Quick access to emergency contacts and resources for your pet</p>
+
+            <!-- Emergency Actions Grid -->
+            <div class="emergency-grid">
+                <div class="emergency-card" onclick="window.location.href='/chat'">
+                    <div class="emergency-icon">🤖</div>
+                    <h3>AI Triage</h3>
+                    <p>Get immediate guidance from our AI assistant for emergency situations</p>
+                    <button class="emergency-btn">Start Triage</button>
+                </div>
+
+                <div class="emergency-card" onclick="window.location.href='/vets?emergency=true'">
+                    <div class="emergency-icon">🩺</div>
+                    <h3>Emergency Vets</h3>
+                    <p>Find emergency veterinary clinics near you</p>
+                    <button class="emergency-btn">Find Vets</button>
+                </div>
+
+                <div class="emergency-card" onclick="showPoisonControl()">
+                    <div class="emergency-icon">☠️</div>
+                    <h3>Poison Control</h3>
+                    <p>Pet poison helpline numbers and resources</p>
+                    <button class="emergency-btn">View Numbers</button>
+                </div>
+
+                <div class="emergency-card" onclick="showRescueContacts()">
+                    <div class="emergency-icon">🚑</div>
+                    <h3>Animal Rescue</h3>
+                    <p>Animal rescue and ambulance services</p>
+                    <button class="emergency-btn">Find Rescue</button>
+                </div>
+            </div>
+
+            <!-- Poison Control Section -->
+            <div id="poison-control-section" class="info-section" style="display: none;">
+                <h2>Poison Control Helplines</h2>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <h3>🆘 Pet Poison Helpline (India)</h3>
+                        <p class="info-detail">📞 1-800-213-6680</p>
+                        <p class="info-detail">⏰ Available 24/7</p>
+                        <p class="info-detail">💡 Keep this number handy for poisoning emergencies</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>🆘 Pet Poison Helpline (International)</h3>
+                        <p class="info-detail">📞 1-855-764-7661</p>
+                        <p class="info-detail">⏰ Available 24/7</p>
+                        <p class="info-detail">💡 International support for pet poisoning</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>⚠️ Common Pet Toxins</h3>
+                        <ul class="toxin-list">
+                            <li>Chocolate, grapes, raisins</li>
+                            <li>Xylitol (sugar substitute)</li>
+                            <li>Onions, garlic, chives</li>
+                            <li>Antifreeze, cleaning products</li>
+                            <li>Human medications</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rescue Contacts Section -->
+            <div id="rescue-contacts-section" class="info-section" style="display: none;">
+                <h2>Animal Rescue Contacts</h2>
+                <div id="rescue-contacts-container" class="info-cards">
+                    <div class="empty-state">
+                        <div class="empty-icon">🚑</div>
+                        <p class="empty-text">Loading rescue contacts...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contacts Section -->
+            <div class="emergency-contacts-section">
+                <h2>All Emergency Contacts</h2>
+                <div id="emergency-contacts-container" class="info-cards">
+                    <div class="empty-state">
+                        <div class="empty-icon">📞</div>
+                        <p class="empty-text">Loading emergency contacts...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/emergency.js') }}"></script>
+</body>
+</html>

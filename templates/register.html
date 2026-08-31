@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - VETPAW</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <span class="logo-icon">🐾</span>
+                    <span class="logo-text">VETPAW</span>
+                </div>
+                <h1>Create Account</h1>
+                <p>Join VETPAW and give your pets the best care</p>
+            </div>
+            
+            <form id="register-form" class="auth-form">
+                <div class="form-group">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name" required placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required placeholder="your@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+91 98765 43210">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="••••••••" minlength="8">
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="••••••••" minlength="8">
+                </div>
+                
+                <div class="form-group">
+                    <label for="role">I am a...</label>
+                    <select id="role" name="role" required>
+                        <option value="PET_OWNER">Pet Owner</option>
+                        <option value="VETERINARIAN">Veterinarian</option>
+                        <option value="NGO">NGO / Animal Welfare Organization</option>
+                        <option value="VOLUNTEER">Volunteer</option>
+                    </select>
+                </div>
+                
+                <div class="form-options">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="terms" required>
+                        <span>I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></span>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn-primary">Create Account</button>
+                
+                <div id="error-message" class="error-message"></div>
+                <div id="success-message" class="success-message"></div>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Already have an account? <a href="/login">Sign in</a></p>
+                <p><a href="/">Back to Home</a></p>
+            </div>
+        </div>
+        
+        <div class="auth-info">
+            <h2>Join Our Community</h2>
+            <ul class="feature-list">
+                <li>🐾 Register unlimited pets with unique IDs</li>
+                <li>🩺 Track vaccinations, medications & health records</li>
+                <li>🏥 Book appointments with verified vets</li>
+                <li>🚨 Access emergency help anytime</li>
+                <li>❤️ Support animal welfare causes</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+</html>
