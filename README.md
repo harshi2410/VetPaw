@@ -1,4 +1,7 @@
 # VETPAW - AI-Powered Pet Health & Welfare Ecosystem
+link - https://vetpaw.onrender.com
+Admin Email: admin@vetpaw.com
+Password: admin123
 
 **Your Pet. Your Vet. Your PawCare.**
 
