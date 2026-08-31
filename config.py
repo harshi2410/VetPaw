@@ -7,12 +7,16 @@ load_dotenv()
 # Flask Configuration
 SECRET_KEY = os.environ.get('SECRET_KEY') or 'vetpaw-secret-key-change-in-production'
 DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
-SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SECURE = os.environ.get('SESSION_COOKIE_SECURE', 'False').lower() in ('true', '1', 'yes') if DEBUG else True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'
 
 # Database Configuration
 DATABASE_URL = os.environ.get('DATABASE_URL', 'sqlite:///vetpaw.db')
+# Render provides postgres:// which must be updated for SQLAlchemy 1.4+ / 2.0+
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 SQLALCHEMY_DATABASE_URI = DATABASE_URL
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 

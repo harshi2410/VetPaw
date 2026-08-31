@@ -224,6 +224,12 @@ The architecture is designed for future enhancements:
 - Multilingual support
 - Voice-based pet assistant
 
+## 🚀 Deployment
+
+VetPaw is ready for 1-click deployment on **[Render](https://render.com)**.
+
+For complete instructions with Render Blueprints (`render.yaml`) and PostgreSQL setup, see **[DEPLOYMENT.md](DEPLOYMENT.md)**.
+
 ## 🤝 Contributing
 
 This is a comprehensive project built for social impact. Contributions are welcome in the form of:

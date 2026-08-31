@@ -9,7 +9,10 @@ def create_app():
     
     # In case DATABASE_URL is somehow missing, fall back for testing
     if not app.config.get('SQLALCHEMY_DATABASE_URI'):
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///vetpaw.db')
+        db_url = os.environ.get('DATABASE_URL', 'sqlite:///vetpaw.db')
+        if db_url.startswith("postgres://"):
+            db_url = db_url.replace("postgres://", "postgresql://", 1)
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
         
     db.init_app(app)
     return app
