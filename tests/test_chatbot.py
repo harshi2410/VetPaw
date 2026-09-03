@@ -30,6 +30,18 @@ class TestChatbot(unittest.TestCase):
         self.assertIn(res['severity'], ['moderate', 'high'])
         self.assertIn("cough", str(res['extracted_symptoms']))
 
+    def test_minor_broken_nail_guidance(self):
+        res = self.bot.process_message("My cat broke just the nail and it is bleeding a little")
+        self.assertNotEqual(res['severity'], 'high')
+        self.assertIn("firm, steady pressure", res['response'])
+        self.assertIn("does not stop", res['response'])
+
+    def test_flea_question_gets_specific_guidance(self):
+        res = self.bot.process_message("How can I tell if my dog has fleas?")
+        self.assertEqual(res['severity'], 'low')
+        self.assertIn("flea comb", res['response'])
+        self.assertIn("Never use a dog flea product on a cat", res['response'])
+
     def test_pet_context_parsing(self):
         prompt = (
             "Pet Context: Name: Luna, Species: Cat, Breed: Persian, Age: 2 years, "

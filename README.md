@@ -19,6 +19,7 @@ VETPAW connects pet owners with intelligent health guidance, veterinarians, emer
 - Intelligent symptom assessment and preliminary triage support
 - Natural language processing for conversational interaction
 - Emergency escalation based on symptom severity
+- Optional OpenAI-compatible conversational responses with local fallback
 - **Note:** Never replaces professional veterinary diagnosis
 
 ### 🩺 Complete Pet Health Management
@@ -137,6 +138,17 @@ python app.py
 - Dashboard: http://localhost:5000/dashboard
 - Login: http://localhost:5000/login
 - Register: http://localhost:5000/register
+
+### Optional AI Responses
+
+Set these environment variables to enable conversational LLM responses. Local emergency triage always runs first, and the rule-based assistant is used automatically if the API is unavailable.
+
+```bash
+OPENAI_API_KEY=your-api-key
+OPENAI_MODEL=gpt-4o-mini
+```
+
+`OPENAI_API_URL` can be set for any OpenAI-compatible chat-completions provider. Never commit API keys to the repository.
 
 ### Default Admin Account
 - Email: admin@vetpaw.com

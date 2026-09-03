@@ -2,6 +2,7 @@ import re
 from triage.symptom_checker import SymptomChecker
 from triage.emergency_rules import is_emergency
 from triage.severity_classifier import classify_severity
+from chatbot.llm_client import PetAdviceLLM
 
 class VetChatbot:
     def __init__(self):
@@ -9,6 +10,7 @@ class VetChatbot:
         self.conversation_state = {}  # Track conversation state for follow-up questions
         self.pet_info = {}  # Store pet information during conversation
         self.current_pet_info = {}
+        self.llm = PetAdviceLLM()
 
     def _parse_pet_context(self, user_input):
         """Extracts pet context and true user message if present."""
@@ -53,30 +55,39 @@ class VetChatbot:
         # 4. Check if this is an emergency help request
         if "emergency" in clean_lower or "help" in clean_lower:
             return self.handle_emergency_request()
-        
-        # 5. Check if this is a general question (diet, breed, exercise, grooming)
-        if any(word in clean_lower for word in ['eat', 'food', 'diet', 'nutrition', 'feed', 'exercise', 'walk', 'run', 'play', 'groom', 'brush', 'bath', 'clean', 'shed', 'golden retriever', 'labrador', 'german shepherd', 'poodle', 'bulldog', 'persian', 'siamese']):
-            return self.handle_general_question(clean_input)
-        
-        # 6. Extract symptoms
+
+        # Always perform local triage before allowing an external model to answer.
         extracted_symptoms = self.symptom_checker.extract_symptoms(clean_input)
-        
-        # 7. Check for emergencies
         emergency, reason = is_emergency(clean_input, extracted_symptoms)
-        
+
         if emergency:
             return {
                 "response": f"🚨 EMERGENCY ALERT: {reason}. Please take your pet to the nearest emergency veterinary clinic IMMEDIATELY.\n\n⚠️ Do not wait. Your pet's life may be at risk.\n\n📞 Emergency Helpline: 1-800-PET-HELP\n🏥 Use the 'Emergency' section to locate nearest emergency clinics.",
                 "severity": "high"
             }
-            
-        # 8. Classify severity
-        severity = classify_severity(extracted_symptoms)
+
+        severity = classify_severity(extracted_symptoms, clean_input)
+        ai_response = self.llm.answer(
+            clean_input,
+            self.current_pet_info,
+            extracted_symptoms,
+            severity,
+        )
+        if ai_response:
+            return {
+                "response": ai_response,
+                "severity": severity,
+                "extracted_symptoms": [s['symptom'] for s in extracted_symptoms]
+            }
         
-        # 9. Formulate response with suggestions
+        # 5. Check if this is a general question (diet, breed, exercise, grooming)
+        if any(word in clean_lower for word in ['eat', 'food', 'diet', 'nutrition', 'feed', 'exercise', 'walk', 'run', 'play', 'groom', 'brush', 'bath', 'clean', 'shed', 'flea', 'fleas', 'tick', 'ticks', 'worm', 'worms', 'golden retriever', 'labrador', 'german shepherd', 'poodle', 'bulldog', 'persian', 'siamese']):
+            return self.handle_general_question(clean_input)
+        
+        # Formulate the local fallback response when no API key is configured.
         response = self.generate_response(clean_input, extracted_symptoms, severity)
         
-        # 10. Add follow-up question if needed
+        # Add follow-up question if needed.
         if severity == "moderate" or not extracted_symptoms:
             response += self.generate_follow_up_question(clean_input, extracted_symptoms)
             
@@ -126,7 +137,7 @@ class VetChatbot:
 
     def generate_response(self, user_input, symptoms, severity):
         """Generate a helpful response based on symptoms and severity."""
-        suggestions = self.get_symptom_suggestions(symptoms)
+        suggestions = self.get_symptom_suggestions(symptoms, user_input)
         
         prefix = ""
         if self.current_pet_info:
@@ -161,13 +172,30 @@ class VetChatbot:
             
         return response
 
-    def get_symptom_suggestions(self, symptoms):
+    def get_symptom_suggestions(self, symptoms, user_input=""):
         """Get specific suggestions based on symptoms."""
         if not symptoms:
             return "Please describe the symptoms your pet is experiencing so I can provide better guidance."
         
         symptom_names = [s['symptom'].lower() for s in symptoms]
         suggestions = []
+
+        lower_input = user_input.lower()
+        nail_injury = 'nail' in lower_input and any(term in lower_input for term in (
+            'broken', 'broke', 'split', 'torn', 'cracked', 'bleeding', 'blood'
+        ))
+        minor_injury = nail_injury or any(term in lower_input for term in (
+            'small cut', 'minor cut', 'small scratch', 'minor scratch',
+        ))
+        if 'bleeding' in symptom_names and minor_injury:
+            suggestions.extend([
+                "• Keep your pet calm and gently hold the paw still",
+                "• Apply firm, steady pressure with clean gauze or cloth for 5-10 minutes",
+                "• If available, use styptic powder; plain flour or cornstarch can help temporarily",
+                "• Once bleeding stops, keep the paw clean and prevent licking",
+                "• Arrange a routine vet visit if the nail is partly attached, the quick is exposed, or your pet remains painful",
+                "• Seek emergency care if bleeding does not stop after 10-15 minutes of pressure, is heavy, or your pet is weak or pale",
+            ])
         
         if any('vomit' in s or 'throw' in s for s in symptom_names):
             suggestions.append("• Withhold food for 12-24 hours to let the stomach rest")
@@ -289,6 +317,10 @@ class VetChatbot:
         # Exercise questions
         if any(word in user_input_lower for word in ['exercise', 'walk', 'run', 'play', 'activity']):
             return self.handle_exercise_question(user_input)
+
+        # Parasite questions need practical prevention and treatment guidance.
+        if any(word in user_input_lower for word in ['flea', 'fleas', 'tick', 'ticks', 'worm', 'worms']):
+            return self.handle_parasite_question(user_input)
         
         # Grooming questions
         if any(word in user_input_lower for word in ['groom', 'brush', 'bath', 'clean', 'shed']):
@@ -298,6 +330,40 @@ class VetChatbot:
             "response": "I can help with general pet care questions! Try asking about:\n\n• Diet and nutrition (e.g., 'Can dogs eat fish?')\n• Breed-specific information (e.g., 'Tell me about Golden Retrievers')\n• Exercise needs (e.g., 'How much exercise does a Labrador need?')\n• Grooming tips (e.g., 'How often should I brush my cat?')\n\nFor health concerns or symptoms, please describe what you're observing so I can provide appropriate guidance.",
             "severity": "low"
         }
+
+    def handle_parasite_question(self, user_input):
+        """Handle common flea, tick, and intestinal-worm questions."""
+        text = user_input.lower()
+        pet_name = self.current_pet_info.get('name', 'your pet') if self.current_pet_info else 'your pet'
+        prefix = f"🐾 **Parasite check for {pet_name}:**\n\n"
+
+        if 'flea' in text:
+            response = (
+                "Fleas are likely if you see fast-moving brown insects, black specks like pepper (flea dirt), "
+                "intense scratching, chewing around the tail, or irritated skin.\n\n"
+                "**What to do:**\n"
+                "• Check the neck, belly, and base of the tail with a flea comb; place any black specks on a damp white tissue\n"
+                "• Start a veterinarian-approved flea treatment for the correct species, age, and weight\n"
+                "• Wash bedding on a hot cycle and vacuum carpets, furniture, and floor edges frequently\n"
+                "• Treat every pet in the home only with products labeled for that species\n"
+                "• Never use a dog flea product on a cat; permethrin can be life-threatening to cats\n\n"
+                "Contact a vet promptly if there are pale gums, weakness, heavy infestation, open sores, or a young puppy/kitten. "
+                "Do not use essential oils or combine flea products without veterinary advice."
+            )
+        elif 'tick' in text:
+            response = (
+                "If you find a tick, use fine-tipped tweezers to grasp it close to the skin and pull straight upward slowly. "
+                "Clean the area afterward and wash your hands. Do not twist, burn, or cover it with oil. "
+                "Ask a vet about prevention and watch for lethargy, fever, reduced appetite, lameness, or swelling over the next few weeks."
+            )
+        else:
+            response = (
+                "Worm signs can include worms or rice-like segments in stool, diarrhea, vomiting, weight loss, a swollen belly, "
+                "or poor growth. A veterinarian should identify the type with a stool test and select the correct dewormer. "
+                "Do not give leftover or human medication. Seek prompt care for repeated vomiting, weakness, blood in stool, or a young puppy/kitten."
+            )
+
+        return {"response": prefix + response, "severity": "low"}
 
     def handle_diet_question(self, user_input):
         """Handle diet and nutrition questions."""
